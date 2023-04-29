@@ -169,3 +169,167 @@ if (GLFW_INSTALL)
     endif()
 endif()
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+set(PROJECT_NAME GLFW)
+
+################################################################################
+# Source groups
+################################################################################
+set(include__GLFW
+    "include/GLFW/glfw3.h"
+    "include/GLFW/glfw3native.h"
+)
+source_group("include\\GLFW" FILES ${include__GLFW})
+
+set(src
+    "src/context.c"
+    "src/egl_context.c"
+    "src/init.c"
+    "src/input.c"
+    "src/monitor.c"
+    "src/null_init.c"
+    "src/null_joystick.c"
+    "src/null_monitor.c"
+    "src/null_window.c"
+    "src/osmesa_context.c"
+    "src/platform.c"
+    "src/vulkan.c"
+    "src/wgl_context.c"
+    "src/win32_init.c"
+    "src/win32_joystick.c"
+    "src/win32_module.c"
+    "src/win32_monitor.c"
+    "src/win32_thread.c"
+    "src/win32_time.c"
+    "src/win32_window.c"
+    "src/window.c"
+)
+source_group("src" FILES ${src})
+
+set(ALL_FILES
+    ${include__GLFW}
+    ${src}
+)
+
+################################################################################
+# Target
+################################################################################
+add_library(${PROJECT_NAME} STATIC ${ALL_FILES})
+
+use_props(${PROJECT_NAME} "${CMAKE_CONFIGURATION_TYPES}" "${DEFAULT_CXX_PROPS}")
+set(ROOT_NAMESPACE GLFW)
+
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    VS_GLOBAL_KEYWORD "Win32Proj"
+)
+################################################################################
+# Target name
+################################################################################
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    TARGET_NAME_DEBUG   "GLFW"
+    TARGET_NAME_DIST    "GLFW"
+    TARGET_NAME_RELEASE "GLFW"
+)
+################################################################################
+# Output directory
+################################################################################
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    OUTPUT_DIRECTORY_DEBUG   "${CMAKE_CURRENT_SOURCE_DIR}/bin/Debug-windows-x86_64/GLFW/"
+    OUTPUT_DIRECTORY_DIST    "${CMAKE_CURRENT_SOURCE_DIR}/bin/Dist-windows-x86_64/GLFW/"
+    OUTPUT_DIRECTORY_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/bin/Release-windows-x86_64/GLFW/"
+)
+################################################################################
+# MSVC runtime library
+################################################################################
+get_property(MSVC_RUNTIME_LIBRARY_DEFAULT TARGET ${PROJECT_NAME} PROPERTY MSVC_RUNTIME_LIBRARY)
+string(CONCAT "MSVC_RUNTIME_LIBRARY_STR"
+    $<$<CONFIG:Debug>:
+        MultiThreadedDebug
+    >
+    $<$<CONFIG:Dist>:
+        MultiThreaded
+    >
+    $<$<CONFIG:Release>:
+        MultiThreaded
+    >
+    $<$<NOT:$<OR:$<CONFIG:Debug>,$<CONFIG:Dist>,$<CONFIG:Release>>>:${MSVC_RUNTIME_LIBRARY_DEFAULT}>
+)
+set_target_properties(${PROJECT_NAME} PROPERTIES MSVC_RUNTIME_LIBRARY ${MSVC_RUNTIME_LIBRARY_STR})
+
+################################################################################
+# Compile definitions
+################################################################################
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+    "_GLFW_WIN32;"
+    "_CRT_SECURE_NO_WARNINGS;"
+    "UNICODE;"
+    "_UNICODE"
+)
+
+################################################################################
+# Compile and link options
+################################################################################
+if(MSVC)
+    target_compile_options(${PROJECT_NAME} PRIVATE
+        $<$<CONFIG:Debug>:
+            /Od;
+            /ZI
+        >
+        $<$<CONFIG:Dist>:
+            /Gm-;
+            /Ox;
+            /Oi;
+            /GF;
+            /Gy;
+            ${DEFAULT_CXX_DEBUG_INFORMATION_FORMAT}
+        >
+        $<$<CONFIG:Release>:
+            /Gm-;
+            /Ox;
+            /Oi;
+            /GF;
+            /Gy;
+            ${DEFAULT_CXX_DEBUG_INFORMATION_FORMAT}
+        >
+        /W3;
+        ${DEFAULT_CXX_EXCEPTION_HANDLING};
+        /Y-
+    )
+    target_link_options(${PROJECT_NAME} PRIVATE
+        $<$<CONFIG:Dist>:
+            /OPT:REF;
+            /OPT:ICF
+        >
+        $<$<CONFIG:Release>:
+            /OPT:REF;
+            /OPT:ICF
+        >
+        /SUBSYSTEM:WINDOWS
+    )
+endif()
+
